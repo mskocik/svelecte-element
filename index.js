@@ -5,7 +5,7 @@ export { addFormatter, config };
 const OPTION_LIST = [
   'options', 'fetch', 'name', 'required', 'value',
   'multiple','disabled', 'max', 'creatable', 'delimiter',
-  'placeholder', 'renderer', 'searchable', 'clearable', 'fetch', 'value-field', 'label-field',
+  'placeholder', 'renderer', 'searchable', 'clearable', 'fetch', 'value-field', 'label-field', 'label-as-value',
   'anchor', 'virtual-list'
 ];
 
@@ -35,6 +35,7 @@ function formatValue(name, value) {
       return value != 'false';
     case 'required':
     case 'virtual-list':
+    case 'label-as-value':
     case 'multiple':
     case 'creatable':
     case 'selectOnTab':
@@ -54,6 +55,7 @@ function formatProp(name) {
     case 'virtual-list': return 'virtualList';
     case 'value-field': return 'valueField';
     case 'label-field': return 'labelField';
+    case 'label-as-value': return 'labelAsValue';
   }
   return name;
 }
@@ -228,6 +230,18 @@ class SvelecteElement extends HTMLElement {
           }
         }
       },
+      'labelAsValue': {
+        get() {
+          return this.hasAttribute('label-as-value');
+        },
+        set(value) {
+          if (!value && value !== '') {
+            this.removeAttribute('label-as-value');
+          } else {
+            this.setAttribute('label-as-value', '');
+          }
+        }
+      }
     });
   }
 
