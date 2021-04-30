@@ -6,7 +6,7 @@ const OPTION_LIST = [
   'options', 'fetch', 'name', 'required', 'value',
   'multiple','disabled', 'max', 'creatable', 'delimiter',
   'placeholder', 'renderer', 'searchable', 'clearable', 'fetch', 'value-field', 'label-field', 'label-as-value',
-  'anchor', 'virtual-list'
+  'anchor', 'virtual-list', 'lazy'
 ];
 
 function formatValue(name, value) {
@@ -39,7 +39,7 @@ function formatValue(name, value) {
     case 'multiple':
     case 'creatable':
     case 'selectOnTab':
-      return value !== null;
+    case 'lazy':
     case 'disabled':
       return value !== null;
     case 'max':
@@ -56,6 +56,7 @@ function formatProp(name) {
     case 'value-field': return 'valueField';
     case 'label-field': return 'labelField';
     case 'label-as-value': return 'labelAsValue';
+    case 'lazy': return 'lazyDropdown';
   }
   return name;
 }
@@ -241,6 +242,16 @@ class SvelecteElement extends HTMLElement {
             this.setAttribute('label-as-value', '');
           }
         }
+      },
+      'lazy': {
+        get() {
+          return this.hasAttribute('lazy')
+            ? true
+            : config.lazyDropdown;
+        },
+        set(value) {
+          console.log('⚠ this setter has no effect after component has been created')
+        }
       }
     });
   }
@@ -262,18 +273,14 @@ class SvelecteElement extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this.hasAttribute('parent') || this.hasAttribute('anchor') || this.hasAttribute('lazy')) {
-      setTimeout(() => { this.render() });
-    } else {
-      this.render();
-    }
+    setTimeout(() => { this.render() });
   }
 
   render() {
     let props = {};
     for (const attr of OPTION_LIST) {
       if (this.hasAttribute(attr)) {
-        props[attr] = formatValue(attr, this.getAttribute(attr));
+        props[formatProp(attr)] = formatValue(attr, this.getAttribute(attr));
       }
     }
     if (this.hasAttribute('class')) {
@@ -305,20 +312,6 @@ class SvelecteElement extends HTMLElement {
       props['anchor'] = anchorSelect;
       anchorSelect.tabIndex = -1; // just to be sure
     }
-    // if (this.childElementCount > 0) {
-    //   props.options = Array.prototype.slice.call(this.children).map(opt => {
-    //     return Object.assign({
-    //       isSelected: opt.selected,
-    //       isDisabled: opt.disabled
-    //     }, opt.dataset.data ? JSON.parse(opt.dataset.data)
-    //       : {
-    //         value: opt.value,
-    //         text: opt.text,
-    //       }
-    //     );
-    //   });
-    //   this.innerHTML = '';
-    // }
     this.svelecte = new Svelecte({
       target: this,
       anchor: anchorSelect,
