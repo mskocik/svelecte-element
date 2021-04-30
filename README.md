@@ -9,4 +9,4 @@ Use [Svelecte](https://github.com/mskocik/svelecte) as custom element.
 
 #### Note
 
-Svelecte is always pinned to specific version.
+Version for svelecte-element package matches [Svelecte](https://github.com/mskocik/svelecte/) version.
