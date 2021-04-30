@@ -277,6 +277,7 @@ class SvelecteElement extends HTMLElement {
   }
 
   render() {
+    if (this.svelecte) return;
     let props = {};
     for (const attr of OPTION_LIST) {
       if (this.hasAttribute(attr)) {
