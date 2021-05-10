@@ -6,7 +6,7 @@ const OPTION_LIST = [
   'options', 'fetch', 'name', 'required', 'value',
   'multiple','disabled', 'max', 'creatable', 'delimiter',
   'placeholder', 'renderer', 'searchable', 'clearable', 'fetch', 'value-field', 'label-field', 'label-as-value',
-  'anchor', 'virtual-list', 'lazy'
+  'virtual-list', 'lazy'
 ];
 
 function formatValue(name, value) {
@@ -44,8 +44,6 @@ function formatValue(name, value) {
       return value !== null;
     case 'max':
       return isNaN(parseInt(value)) ? 0 : parseInt(value);
-    case 'anchor':
-      return value ? document.getElementById(value) : null;
   }
   return value;
 }
@@ -69,6 +67,7 @@ class SvelecteElement extends HTMLElement {
   constructor() {
     super();
     this.svelecte = undefined;
+    this.anchorSelect = null;
     this._fetchOpts = null;
     
     /** ************************************ public API */
@@ -173,12 +172,9 @@ class SvelecteElement extends HTMLElement {
           }
         }
       },
-      'anchor': {
+      'hasAnchor': {
         get() {
-          return this.getAttribute('anchor');
-        },
-        set(value) {
-          this.setAttribute('anchor', value);
+          return this.anchorSelect ? true : false;
         }
       },
       'max': {
@@ -310,18 +306,35 @@ class SvelecteElement extends HTMLElement {
     }
     const anchorSelect = this.querySelector('select');
     if (anchorSelect) {
-      props['anchor'] = anchorSelect;
+      props['hasAnchor'] = true;
+      anchorSelect.style = 'opacity: 0; position: absolute; z-index: -2; top: 0; height: 38px';
       anchorSelect.tabIndex = -1; // just to be sure
+      this.anchorSelect = anchorSelect;
+      this.anchorSelect.name = props.name;
+      this.anchorSelect.multiple = props.multiple || props.name.includes('[]');
+      this.anchorSelect.innerHTML = '<option value="" selected>Empty</option>';
     }
     this.svelecte = new Svelecte({
       target: this,
       anchor: anchorSelect,
       props,
-    });
+    }); 
     this.svelecte.$on('change', e => {
       const value = this.svelecte.getSelection(true);
       this.setAttribute('value', Array.isArray(value) ? value.join(',') : value);
       this.dispatchEvent(e);
+      // Custom-element related
+      if (this.anchorSelect) {
+        this.anchorSelect.innerHTML = (Array.isArray(value) ? (value.length ? value : [null]) : [value]).reduce((res, item) => {
+          if (!item) {
+            res+= '<option value="" selected="">Empty</option>';
+            return res;
+          }
+          res+= `<option value="${item}" selected>${item}</option>`;
+          return res;
+        }, '');
+        this.anchorSelect.dispatchEvent(new Event('change'));
+      }
     });
     this.svelecte.$on('fetch', e => {
       this._fetchOpts = e.detail;
