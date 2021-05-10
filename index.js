@@ -248,6 +248,11 @@ class SvelecteElement extends HTMLElement {
         set(value) {
           console.log('⚠ this setter has no effect after component has been created')
         }
+      },
+      'form': {
+        get() {
+          return this.closest('form');
+        }
       }
     });
   }
