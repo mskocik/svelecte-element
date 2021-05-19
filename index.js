@@ -317,7 +317,9 @@ class SvelecteElement extends HTMLElement {
       this.anchorSelect = anchorSelect;
       this.anchorSelect.name = props.name;
       this.anchorSelect.multiple = props.multiple || props.name.includes('[]');
-      this.anchorSelect.innerHTML = '<option value="" selected>Empty</option>';
+      (Array.isArray(props.value) ? props.value : [props.value]).forEach(val => {
+        this.anchorSelect.innerHTML += `<option value="${val}" selected>${val}</option>`;
+      });
     }
     this.svelecte = new Svelecte({
       target: this,
