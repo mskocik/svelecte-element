@@ -268,10 +268,10 @@ class SvelecteElement extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (this.svelecte && oldValue !== newValue) {
       name === 'value'
-        ? this.svelecte.setSelection(formatValue(name, newValue))
+        ? (newValue ? this.svelecte.setSelection(formatValue(name, newValue)) : this.svelecte.clearByParent(this.parent ? true : false))
         : this.svelecte.$set({ [formatProp(name)]: formatValue(name, newValue) });
     }
-  }
+  } 
 
   connectedCallback() {
     setTimeout(() => { this.render() });
