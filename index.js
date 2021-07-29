@@ -59,6 +59,9 @@ function formatProp(name) {
   return name;
 }
 
+let volatileEmitChange = false;
+
+
 /**
  * Connect Custom Component attributes to Svelte Component properties
  * @param {string} name Name of the Custom Component
@@ -253,6 +256,12 @@ class SvelecteElement extends HTMLElement {
         get() {
           return this.closest('form');
         }
+      },
+      'emitChange': {
+        get() {
+          volatileEmitChange = true;
+          return this;
+        }
       }
     });
   }
@@ -267,9 +276,23 @@ class SvelecteElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (this.svelecte && oldValue !== newValue) {
-      name === 'value'
-        ? (newValue ? this.svelecte.setSelection(formatValue(name, newValue)) : this.svelecte.clearByParent(this.parent ? true : false))
-        : this.svelecte.$set({ [formatProp(name)]: formatValue(name, newValue) });
+      if (name === 'value') {
+        newValue ? this.svelecte.setSelection(formatValue(name, newValue), volatileEmitChange) : this.svelecte.clearByParent(this.parent ? true : false);
+        volatileEmitChange = false;
+        this.anchorSelect && setTimeout(() => {
+          const value = this.svelecte.getSelection(true);
+          this.anchorSelect.innerHTML = (Array.isArray(value) ? (value.length ? value : [null]) : [value]).reduce((res, item) => {
+            if (!item) {
+              res+= '<option value="" selected="">Empty</option>';
+              return res;
+            }
+            res+= `<option value="${item}" selected>${item}</option>`;
+            return res;
+          }, '');
+        });
+        return;
+      } 
+      this.svelecte.$set({ [formatProp(name)]: formatValue(name, newValue) });
     }
   } 
 
